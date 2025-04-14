@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Perguntas Aleatórias</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #f8d7da;
+            color: rgb(0, 0, 0);
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 650px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background-color: #d1e7dd;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .bot {
+            background-color: #f8d7da;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: calc(100% - 24px);
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: #999;
+            text-align: right;
+        }
+
+        /* Scrollbar styling */
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Cabeçalho -->
+    <div class="header">
+        Bem-vindo ao Chatbot de Perguntas Aleatórias!
+        <p>Comece digitando sua primeira pergunta ou escolha uma para começar.</p>
+    </div>
+
+    <!-- Container do Chat -->
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <!-- A primeira mensagem será carregada logo ao abrir a página -->
+        </div>
+        <input type="text" id="user-input" placeholder="Digite sua resposta..." autofocus />
+        <button id="send-button">Enviar</button>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('send-button');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+
+        // Função para adicionar uma mensagem ao chat
+        function appendMessage(sender, message, senderClass) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', senderClass);
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${message} <div class="message-time">${getTime()}</div>`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Função para pegar o horário
+        function getTime() {
+            const now = new Date();
+            return `${now.getHours()}:${now.getMinutes()}`;
+        }
+
+        // Enviar a mensagem
+        sendButton.addEventListener('click', async () => {
+            const message = userInput.value.trim();
+            if (message) {
+                appendMessage('Você', message, 'user');
+                userInput.value = '';
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    body: new URLSearchParams({ message }),
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                const data = await response.json();
+                appendMessage('Bot', data.response, 'bot');
+            }
+        });
+
+        // Enviar uma mensagem automaticamente quando o chat for carregado
+        window.onload = async () => {
+            appendMessage('Bot', 'Olá! Bem-vindo ao Chatbot de Perguntas Aleatórias! Vamos começar!', 'bot');
+        };
+    </script>
+
+</body>
+
+</html>
